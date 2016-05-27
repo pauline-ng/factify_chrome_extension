@@ -1,0 +1,22 @@
+{
+    "name": "factpub",
+    "version": "0.1",
+    "manifest_version": 2,
+    
+    "description": "factpub uploader",
+	
+    "permissions": [
+        "tabs", "http://*/*",
+		"contextMenus"
+    ],
+    
+    "background": {
+        "scripts": ["background.js"]
+    },
+
+    "page_action": {
+        "default_icon": "factpub_icon_beer.png",
+        "default_title": "extract fact from the pdf"
+    }
+	
+}

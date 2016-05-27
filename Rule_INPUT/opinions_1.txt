@@ -1,0 +1,14 @@
+--version:1.0
+//opinions
+believe
+suggest
+recommend
+prefer
+favor	
+encourage
+hypothesize
+approve
+insist
+assure
+ascertain
+know
