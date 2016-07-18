@@ -28,8 +28,8 @@ function updateUiState() {
   }
 }
 
-function sendNativeMessage() {
-  message = {"text": document.getElementById('input-text').value};
+function sendNativeMessage(key, val) {
+  message = {key: val};
   port.postMessage(message);
   appendMessage("Sent message: <b>" + JSON.stringify(message) + "</b>");
 }
@@ -63,21 +63,54 @@ function connect() {
   updateUiState();
 }
 
-function savepdf() {
-	console.log("savePDF is performed.");
-	
-	chrome.tabs.getSelected(window.id, function (tab) {
-		//tab.urlに開いているタブのURLが入っている
-		document.getElementById('input-text').value = tab.url
-		console.log(tab.url);
-	});
 
+function writeToLocal(filename, content) {
+    // reject if the browser is not chrome
+    var ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf('chrome') == -1) {
+        alert("This Page is Google Chrome only!");
+    }
+
+    function errorCallback(e) {
+        alert("Error: " + e.name);
+    }
+
+    function fsCallback(fs) {
+        fs.root.getFile(filename, {create: true}, function(fileEntry) {
+            fileEntry.createWriter(function(fileWriter) {
+
+                fileWriter.onwriteend = function(e) {
+                    alert("Success! : " + fileEntry.fullPath);
+                };
+
+                fileWriter.onerror = function(e) {
+                    alert("Failed: " + e);
+                };
+
+                var output = new Blob([content], {type: "application/pdf"});
+                fileWriter.write(output);
+            }, errorCallback);
+        }, errorCallback);
+    }
+    // クオータを要求する。PERSISTENTでなくTEMPORARYの場合は
+    // 直接 webkitRequestFileSystem を呼んでよい
+    webkitRequestFileSystem(TEMPORARY, 1024, fsCallback, errorCallback);
+}
+
+function savePDF() {
+	console.log("savePDF clicked.");
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+	console.log("File API is supported!")
+	writeToLocal("hoge.txt", "foo\n");
+	
+	} else {
+	console.log("File API is not supported.");
+	}
 }
 
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('connect-button').addEventListener('click', connect);
-  document.getElementById('savepdf-button').addEventListener('click', savepdf);
-  //document.getElementById('savepdf-button').addEventListener('click', safepdf);
+  document.getElementById('save-pdf-button').addEventListener('click', savePDF);
   document.getElementById('send-message-button').addEventListener('click', sendNativeMessage);
   updateUiState();
 });

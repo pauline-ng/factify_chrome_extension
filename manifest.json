@@ -12,7 +12,8 @@
 		"tabs",
 		"http://*/*",
 		"https://*/*",
-		"nativeMessaging"
+		"nativeMessaging",
+		"storage"
 	],
 	
 	"background": {
