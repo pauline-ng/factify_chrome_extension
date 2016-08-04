@@ -4,5 +4,5 @@
 :: found in the LICENSE file.
 
 :: java -jar factpub_uploader.jar
-java -jar factify_chrome.jar
+java -jar factify.jar chrome
 :: python native-messaging-example-host
