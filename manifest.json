@@ -1,35 +1,27 @@
 {
-	// Extension ID: knldjmfmopnpolahpmmgbagdohdnhkik
 	"key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDcBHwzDvyBQ6bDppkIs9MP4ksKqCMyXQ/A52JivHZKh4YO/9vJsT3oaYhSpDCE9RPocOEQvwsHsFReW2nUEc6OLLyoCFFxIb7KkLGsmfakkut/fFdNJYh0xOTbSN8YvLWcqph09XAY2Y/f0AL7vfO1cuCqtkMt8hFrBGWxDdf9CQIDAQAB",
 
 	"name": "Factify Chrome",
+	"author": "Sun SAGONG",
 	"version": "0.0.1",
 	"manifest_version": 2,
-
 	"description": "Factify Chrome Extension by using NativeMessaging",
+	"icons": {
+		"128": "images/icon.png"
+	},
+
+	"page_action": {
+    "default_icon": "images/icon.png"
+  },
+
+	"background": {
+		"scripts": ["scripts/jquery-3.1.0.min.js","scripts/background.js"]
+	},
 
 	"permissions": [
 		"tabs",
 		"http://*/*",
 		"https://*/*",
-		"nativeMessaging",
-		"storage"
-	],
-	
-	"background": {
-		"scripts": ["content_script.js"]
-    },
-	
-	"page_action": {
-        "default_icon": "factpub_icon_beer.png",
-        "default_title": "extract fact from the pdf",
-		"default_popup": "popup.html"
-    },
-	
-	"icons": {
-		"128": "factpub_logo.png"
-	},
-	
-	// to retrieve contents
-	"web_accessible_resources": ["inject.js"]
+		"nativeMessaging"
+	]
 }
