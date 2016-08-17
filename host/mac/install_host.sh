@@ -21,7 +21,7 @@ mkdir -p "$TARGET_DIR"
 # Copy native messaging host manifest.
 cp "$DIR/$HOST_NAME.json" "$TARGET_DIR"
 # Update host path in the manifest.
-HOST_PATH=$DIR/native-messaging-example-host
+HOST_PATH=$DIR/native-messaging-host
 ESCAPED_HOST_PATH=${HOST_PATH////\\/}
 sed -i -e "s/HOST_PATH/$ESCAPED_HOST_PATH/" "$TARGET_DIR/$HOST_NAME.json"
 # Set permissions for the manifest so that all users can read it.

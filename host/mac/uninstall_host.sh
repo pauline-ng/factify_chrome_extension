@@ -14,6 +14,6 @@ else
     TARGET_DIR="$HOME/.config/google-chrome/NativeMessagingHosts"
   fi
 fi
-HOST_NAME=com.google.chrome.example.echo
-rm "$TARGET_DIR/org.factpub.factify.json"
+HOST_NAME=org.factpub.factify
+rm "$TARGET_DIR/$HOST_NAME.json"
 echo "Native messaging host $HOST_NAME has been uninstalled."
