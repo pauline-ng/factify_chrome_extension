@@ -44,6 +44,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 // Page Action?
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
+    
     xhr = new XMLHttpRequest();
     var url = tab.url;
 
