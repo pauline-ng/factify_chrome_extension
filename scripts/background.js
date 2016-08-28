@@ -55,6 +55,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 	// Thankfully you can cast them to standard promises,
 	// which is worth doing as soon as possible:
 
+	// Get file name with extension.
+	// var url = tab.url;
+	// var file = url;
+
+	// var jsPromise = Promise.resolve($.ajax(file));
 
     xhr = new XMLHttpRequest();
     var url = tab.url;
