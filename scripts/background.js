@@ -44,7 +44,18 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 // Page Action?
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
-    
+	// Use JavaScript Promise instead of XMLHttpRequest()
+	// 
+	// The JavaScript promises API will treat anything with 
+	// a then method as promise-like (or thenable in promise-speak *sigh*),
+	// so if you use a library that returns a Q promise, that's fine,
+	// it'll play nice with the new JavaScript promises.
+
+	// Although, as I mentioned, jQuery's Deferreds are a bitÅc unhelpful.
+	// Thankfully you can cast them to standard promises,
+	// which is worth doing as soon as possible:
+
+
     xhr = new XMLHttpRequest();
     var url = tab.url;
 
