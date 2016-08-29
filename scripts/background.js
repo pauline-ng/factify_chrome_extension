@@ -33,13 +33,13 @@ function isPdfFile(response, url) {
   }
 }
 
-// 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    if (tab.url.indexOf('dotinstall') != -1) {
-        // page action show
-        chrome.pageAction.show(tabId);
-    }
-});
+// // 
+// chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+//     if (tab.url.indexOf('dotinstall') != -1) {
+//         // page action show
+//         chrome.pageAction.show(tabId);
+//     }
+// });
 
 // Page Action?
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
@@ -61,24 +61,34 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 	// var jsPromise = Promise.resolve($.ajax(file));
 
-    xhr = new XMLHttpRequest();
-    var url = tab.url;
+  // url (required), options (optional)
+  fetch(tab.url, {
+    method: 'get'
+  }).then(function(response) {
+    
+  }).catch(function(err) {
+    // Error :(
+  });
 
-    xhr.open('GET', url, true);
-    xhr.responseType = "arraybuffer";
 
-    xhr.onload = function() {
-      if (isPdfFile(this, url)) {
-        chrome.pageAction.show(tabId);
-        console.log(url);
-        console.log("This page is PDF -- page action is activated.");
+  xhr = new XMLHttpRequest();
+  var url = tab.url;
 
-      } else {
-        // The page is HTML file
-      }
+  xhr.open('GET', url, true);
+  xhr.responseType = "arraybuffer";
+
+  xhr.onload = function() {
+    if (isPdfFile(this, url)) {
+      chrome.pageAction.show(tabId);
+      console.log(url);
+      console.log("This page is PDF -- page action is activated.");
+
+    } else {
+      // The page is HTML file
     }
+  }
 
-    xhr.send(null);
+  xhr.send(null);
 });
 
 // Clicked?
