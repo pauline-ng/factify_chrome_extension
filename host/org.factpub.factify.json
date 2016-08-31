@@ -1,9 +1,0 @@
-{
-  "name": "org.factpub.factify",
-  "description": "Factify Chrome with Chrome Native Messaging API",
-  "path": "HOST_PATH",
-  "type": "stdio",
-  "allowed_origins": [
-    "chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/"
-  ]
-}
