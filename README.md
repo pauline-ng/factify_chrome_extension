@@ -17,16 +17,20 @@ Build & Run
 -----------
 
 *  `git clone https://github.com/sunsagong/factify_chrome_extension.git`
-**  (or download ZIP from the green button above right on this page and expand somewhere on your machine.)
+*  (or download ZIP from the green button above right on this page and expand somewhere on your machine.)
 * Chrome Browser: [Setting] -> [Extension] -> [Load unpacked extension] -> [Choose the downloaded folder]
+
 ![Load Extension in Chrome Browser](http://factpub.org/img/factify_chrome_extension_loading.png)
+
+* Check [Enable] and the extension runs in Developer mode.
 * Browse PDF file via Chrome Browser and the page action starts running background extraction process.
 * _[host program](https://github.com/sunsagong/factify_chrome_extension_nativeapp) must be pre-installed for background extraction processing_
 
 Architecture
 ------------
 
-This program uses [Native Messaging protocol](https://developer.chrome.com/extensions/nativeMessaging) to run Java program as a background process. Thus, [host program](https://github.com/sunsagong/factify_chrome_extension_nativeapp) must be installed prior to install this extension.
+This program uses [Native Messaging protocol](https://developer.chrome.com/extensions/nativeMessaging) to run Java program as a background process.
+[Host program](https://github.com/sunsagong/factify_chrome_extension_nativeapp) must be installed prior to install this extension.
 
 About FactPub
 -------------
