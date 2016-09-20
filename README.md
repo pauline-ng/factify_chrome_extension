@@ -6,7 +6,7 @@ Factify Chrome Extension is Chrome Extension that helps background processing fo
 Requirement
 -----------
 
-[Factify Chrome](https://github.com/sunsagong/) - host program that runs on local machine.
+[Installer of the host program for Chrome Extension](https://github.com/sunsagong/factify_chrome_extension_nativeapp) - host program that runs on local machine.
 
 Installation
 ------------
