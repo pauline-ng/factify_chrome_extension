@@ -108,13 +108,12 @@ function notifyMe(url) {
 		Notification.requestPermission();
 	else {
 
-			
 			chrome.notifications.create("", {
 				type:    "basic",
 				iconUrl: "icon.png",
 				title:   "Factify Chrome",
-				message: "Send facts of the following paper?",
-				contextMessage: url,
+				message: url,
+				contextMessage: "Send facts of the above paper?",
 
 				// Only be able to show up till two buttons
 				// https://developer.chrome.com/apps/richNotifications#behave
@@ -144,26 +143,18 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 						runNativeApp();
 						// chrome.notifications.clear(notifId)
 						
-						// chrome.notifications.create("", {
-						// type:    "progress",
-						// iconUrl: "icon.png",
-						// title:   "Factify Chrome",
-						// message: "Send facts of the following paper?",
-						// contextMessage: url,
+						chrome.notifications.update(notifId, {
+						type:    "progress",
+						title:   "Factify Chrome",
+						contextMessage: "Start extracting facts from PDF...",
+						iconUrl: "icon_yes.png",
+						progress: 10,
+						buttons: []
 
-						// 	// Only be able to show up till two buttons
-						// 	// https://developer.chrome.com/apps/richNotifications#behave
-						// 	buttons: [{
-						// 		title: "Yes, donate facts to factpub.org.",
-						// 		iconUrl: "icon_yes.png"
-						// }, {
-						// 		title: "No.",
-						// 		iconUrl: "icon_no.png"
-						// }]
 
-						// }, function(id) {
-						// 		myNotificationID = id;
-						// });
+						}, function(id) {
+								myNotificationID = id;
+						});
 
 
 				} else if (btnIdx === 1) {
