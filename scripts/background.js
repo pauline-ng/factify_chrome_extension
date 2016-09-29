@@ -120,9 +120,17 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       chrome.pageAction.show(tabId);
       console.log(url);
       console.log("This page is PDF -- page action is activated.");
-      //chrome.browserAction.popup({url : "popup.html"}); 
-      console.log("token value:" + getRandomToken());
-
+	  
+	  //TODO: show pop-up window 
+		chrome.pageAction.setPopup({
+      tabId: tabId,
+			popup: 'popup.html'
+		});
+	  
+	  console.log("Native App will be launched");
+	  //runNativeApp();
+      
+	  //chrome.browserAction.popup({url : "popup.html"}); 
     } else {
       // The page is HTML file
     }
@@ -133,7 +141,12 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 // Clicked?
 chrome.pageAction.onClicked.addListener(function() {
-    console.log("Page Action is clicked!");
+  console.log("The extension icon was clicked!");
+  runNativeApp();
+});
+
+function runNativeApp(){
+    
     console.log(xhr);
     pdfData = {"responseURL": null, "size":0, "pdf":null};
 
@@ -151,8 +164,8 @@ chrome.pageAction.onClicked.addListener(function() {
     console.log(pdfData.responseURL)
     console.log(pdfData.size);
     console.log(pdfData.pdf);
-    connectNativeApp();
-});
+    connectNativeApp();  
+}
 
 function connectNativeApp() {
   console.log("Connecting to NativeApp...");
