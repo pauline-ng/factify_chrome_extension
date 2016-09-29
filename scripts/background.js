@@ -59,6 +59,7 @@ chrome.storage.sync.get('userid', function(items) {
     }
     function useToken(userid) {
         // TODO: Use user id for authentication or whatever you want.
+        console.log("The token stored: " + userid)
     }
 });
 
