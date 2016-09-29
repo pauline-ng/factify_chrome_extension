@@ -47,11 +47,18 @@ function getRandomToken() {
     return hex;
 }
 
+
+// https://developer.chrome.com/extensions/storage
+// storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
+// storage.local => the token is only valid for one machine
+
 chrome.storage.sync.get('userid', function(items) {
     var userid = items.userid;
     if (userid) {
+      // if token exists
         useToken(userid);
     } else {
+      // if token does not exist
         userid = getRandomToken();
         chrome.storage.sync.set({userid: userid}, function() {
             useToken(userid);
