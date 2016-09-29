@@ -7,22 +7,29 @@
 	"manifest_version": 2,
 	"description": "Factify Chrome Extension by using NativeMessaging",
 	"icons": {
-		"128": "images/icon.png"
+		"128": "icon.png"
 	},
 
-	"page_action": {
-    "default_icon": "images/icon.png"
+	"browser_action": {
+    "default_icon": "icon.png"
   },
 
 	"background": {
-		"scripts": ["scripts/background.js"]
+		"scripts": ["background.js"]
 	},
 
 	"permissions": [
 		"tabs",
 		"storage",
+		"notifications",
 		"http://*/*",
 		"https://*/*",
 		"nativeMessaging"
-	]
+	],
+
+	"web_accessible_resources": [
+    	"icon.png"
+  	]
+
+
 }
