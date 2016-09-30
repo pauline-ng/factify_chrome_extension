@@ -75,7 +75,7 @@ chrome.storage.sync.get('userid', function(items) {
 		}
 		function useToken(userid) {
 				// TODO: Use user id for authentication or whatever you want.
-				console.log("The token stored: " + userid)
+				console.log("The stored token for Factify Chrome: " + userid)
 		}
 });
 ////////////////////////////////////////////////////////////////////////////
@@ -153,11 +153,9 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 						progress: 5,
 						buttons: []
 
-
 						}, function(id) {
 								myNotificationID = id;
 						});
-
 
 				} else if (btnIdx === 1) {
 						chrome.notifications.clear(notifId)
@@ -191,24 +189,24 @@ chrome.notifications.onClosed.addListener(function(notifId) {
 // Codes when Browser load the page
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
-	fetch(tab.url).then(function(response) {
-		var contentType = response.headers.get("content-type");
-	  if(contentType && contentType.indexOf("application/pdf") !== -1) {
-	  	console.log("This page is PDF!");
-	    notifyMe(response.url);
-
-	    console.log(response.body);
+	if(changeInfo.status == "loading"){
+			fetch(tab.url).then(function(response) {
+				var contentType = response.headers.get("content-type");
+	  		if(contentType && contentType.indexOf("application/pdf") !== -1) {
+	  			console.log("This page is PDF");
+	    		notifyMe(response.url);
+	    		console.log(response.locked);
 	    
-	  } else {
-	  	// Do Nothing.
-	  }
+	  		} else {
+	  			// Do Nothing.
+	  		}
 
-	}).catch(function(err) {
-		console.log("Fetch: error occured!");
-		console.log(err);
+			}).catch(function(err) {
+				console.log("Fetch: error occured");
+				console.log(err);
 
-	});
-
+			});
+	}
 	// xhr = new XMLHttpRequest();
 	// var url = tab.url;
 
