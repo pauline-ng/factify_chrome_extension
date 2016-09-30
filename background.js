@@ -29,15 +29,15 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 // Codes for checking if the page is PDF
-function isPdfFile(response, url) {
-	var header = response.getResponseHeader('content-type');
-	if (header) {
-		var headerValue = header.toLowerCase().split(';', 1)[0].trim();
-		return (headerValue === 'application/pdf' ||
-						headerValue === 'application/octet-stream' &&
-						url.toLowerCase().indexOf('.pdf') > 0);
-	}
-}
+// function isPdfFile(response, url) {
+// 	var header = response.getResponseHeader('content-type');
+// 	if (header) {
+// 		var headerValue = header.toLowerCase().split(';', 1)[0].trim();
+// 		return (headerValue === 'application/pdf' ||
+// 						headerValue === 'application/octet-stream' &&
+// 						url.toLowerCase().indexOf('.pdf') > 0);
+// 	}
+// }
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ chrome.storage.sync.get('userid', function(items) {
 // request permission on page load
 document.addEventListener('DOMContentLoaded', function () {
 	if (!Notification) {
-		alert('Desktop notifications not available in your browser. Try Chromium.'); 
+		alert('Desktop notifications not available in your browser.'); 
 		return;
 	}
 
@@ -103,22 +103,24 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 var myNotificationID = null;
+var myNotification = {}; //Hashmap
+
 function notifyMe(url) {
 	if (Notification.permission !== "granted")
 		Notification.requestPermission();
 	else {
 
-			chrome.notifications.create("", {
+			var nt = chrome.notifications.create("", {
 				type:    "basic",
 				iconUrl: "icon.png",
 				title:   "Factify Chrome",
 				message: url,
-				contextMessage: "Send facts of the above paper?",
+				contextMessage: "Send facts of this paper?",
 
 				// Only be able to show up till two buttons
 				// https://developer.chrome.com/apps/richNotifications#behave
 				buttons: [{
-						title: "Yes, donate facts to factpub.org.",
+						title: "Yes, donate facts to factpub.org",
 						iconUrl: "icon_yes.png"
 				}, {
 						title: "No.",
@@ -131,7 +133,8 @@ function notifyMe(url) {
 		//   console.log("start Factify: " + url)
 		//   confirm("wanna factify?");
 		// };
-
+			console.log("notification" + nt)
+//		myNotifications[] = 
 	}
 
 }
@@ -145,10 +148,9 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 						
 						chrome.notifications.update(notifId, {
 						type:    "progress",
-						title:   "Factify Chrome",
-						contextMessage: "Start extracting facts from PDF...",
+						contextMessage: "Launching extraction process...",
 						iconUrl: "icon_yes.png",
-						progress: 10,
+						progress: 5,
 						buttons: []
 
 
@@ -163,10 +165,17 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 		}
 });
 
+chrome.notifications.onClicked.addListener(function(notifId) {
+		chrome.notifications.getAll(function(notifications){
+			console.log(notifications[notifId].message())
+		});
+		//window.open(notifId.message);
+});
+
 /* Add this to also handle the user's clicking 
  * the small 'x' on the top right corner */
-chrome.notifications.onClosed.addListener(function() {
-		saySorry();
+chrome.notifications.onClosed.addListener(function(notifId) {
+		console.log("Notification ID: " + notifId + " is closed");
 });
 // Codes for notification
 ////////////////////////////////////////////////////////////////////////////
@@ -179,78 +188,69 @@ chrome.notifications.onClosed.addListener(function() {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-// Codes when Browser load PDF
+// Codes when Browser load the page
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
-	// Use JavaScript Promise instead of XMLHttpRequest()
-	// 
-	// The JavaScript promises API will treat anything with 
-	// a then method as promise-like (or thenable in promise-speak *sigh*),
-	// so if you use a library that returns a Q promise, that's fine,
-	// it'll play nice with the new JavaScript promises.
+	fetch(tab.url).then(function(response) {
+		var contentType = response.headers.get("content-type");
+	  if(contentType && contentType.indexOf("application/pdf") !== -1) {
+	  	console.log("This page is PDF!");
+	    notifyMe(response.url);
 
-	// Although, as I mentioned, jQuery's Deferreds are a bitÅc unhelpful.
-	// Thankfully you can cast them to standard promises,
-	// which is worth doing as soon as possible:
+	    console.log(response.body);
+	    
+	  } else {
+	  	// Do Nothing.
+	  }
 
-	// Get file name with extension.
+	}).catch(function(err) {
+		console.log("Fetch: error occured!");
+		console.log(err);
+
+	});
+
+	// xhr = new XMLHttpRequest();
 	// var url = tab.url;
-	// var file = url;
 
-	// var jsPromise = Promise.resolve($.ajax(file));
+	// xhr.open('GET', url, true);
+	// xhr.responseType = "arraybuffer";
 
-	// // url (required), options (optional)
-	// fetch(tab.url, {
-	// 	method: 'get'
-	// }).then(function(response) {
+	// xhr.onload = function() {
+	// 	if (isPdfFile(this, url)) {
+	// 		//chrome.browserAction.show(tabId);
+	// 		console.log(url);
+	// 		console.log("This page is PDF -- page action is activated.");
 		
-	// }).catch(function(err) {
-	// 	// Error :(
-	// });
-
-
-	xhr = new XMLHttpRequest();
-	var url = tab.url;
-
-	xhr.open('GET', url, true);
-	xhr.responseType = "arraybuffer";
-
-	xhr.onload = function() {
-		if (isPdfFile(this, url)) {
-			//chrome.browserAction.show(tabId);
-			console.log(url);
-			console.log("This page is PDF -- page action is activated.");
+	// 	//TODO: show pop-up window 
 		
-		//TODO: show pop-up window 
-		
-		// Show confirmation dialog box for user choice.
-		// var x;
-		// if (confirm("Do you wanna extract this PDF?") == true) {
-		//     x = "Okay, start extracting..";
-		//     console.log("Native App will be launched");
-		// } else {
-		//     x = "Do nothing.";
-		// }
-		// console.log(x);
+	// 	// Show confirmation dialog box for user choice.
+	// 	// var x;
+	// 	// if (confirm("Do you wanna extract this PDF?") == true) {
+	// 	//     x = "Okay, start extracting..";
+	// 	//     console.log("Native App will be launched");
+	// 	// } else {
+	// 	//     x = "Do nothing.";
+	// 	// }
+	// 	// console.log(x);
 
-		// setPopup only set the specified html for pop-up. it does not show pop-up.
-	//   chrome.browserAction.setPopup({
-	//     "popup": "popup.html"
-	// });
+	// 	// setPopup only set the specified html for pop-up. it does not show pop-up.
+	//     chrome.browserAction.setPopup({
+	//     		"popup": "popup.html"
+	// 		});
 		
-		notifyMe(url);
+	// 	notifyMe(url);
 
-		console.log("You must have seen the popup window...");
+	// 	console.log("You must have seen the popup window...");
 		
-		//runNativeApp();
+	// 	//runNativeApp();
 			
-		//chrome.browserAction.popup({url : "popup.html"}); 
-		} else {
-			// The page is HTML file
-		}
-	}
+	// 	//chrome.browserAction.popup({url : "popup.html"}); 
+	// 	} else {
+	// 		// The page is HTML file
+	// 	}
+	// }
 
-	xhr.send(null);
+	// xhr.send(null);
 });
 
 // chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
