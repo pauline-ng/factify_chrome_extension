@@ -16,28 +16,23 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
-	* Check if the page is a PDF file.
-	* @param {Object} details First argument of the webRequest.onHeadersReceived
-	*                         event. The properties "responseHeaders" and "url"
-	*                         are read.
-	* @return {boolean} True if the resource is a PDF file.
-	*/
-
-
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 // Codes for checking if the page is PDF
-// function isPdfFile(response, url) {
-// 	var header = response.getResponseHeader('content-type');
-// 	if (header) {
-// 		var headerValue = header.toLowerCase().split(';', 1)[0].trim();
-// 		return (headerValue === 'application/pdf' ||
-// 						headerValue === 'application/octet-stream' &&
-// 						url.toLowerCase().indexOf('.pdf') > 0);
-// 	}
-// }
+function isPdfFile(response, url) {
+	var header = response.getResponseHeader('content-type');
+	if (header) {
+		var headerValue = header.toLowerCase().split(';', 1)[0].trim();
+		return (headerValue === 'application/pdf' ||
+						headerValue === 'application/octet-stream' &&
+						url.toLowerCase().indexOf('.pdf') > 0);
+	}
+}
+// Codes for checking if the page is PDF
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -83,6 +78,58 @@ chrome.storage.sync.get('userid', function(items) {
 ////////////////////////////////////////////////////////////////////////////
 
 
+
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+// Codes when Browser load the page
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+
+	if(changeInfo.status == "complete"){
+		
+		// 
+		// fetch(tab.url).then(function(response) {
+		// 	var contentType = response.headers.get("content-type");
+	  // 		if(contentType && contentType.indexOf("application/pdf") !== -1) {
+	  // 			console.log("This page is PDF");
+	  //   		notifyMe(response.url);
+	  //   		console.log("Responsse: " + response.blob);
+	  //   		console.log("Body: " + response.body);
+	  // 		} else {
+	  // 			// Do Nothing.
+	  // 		}
+  	// }).catch(function(err) {
+		// 	console.log("Fetch: error occured");
+		// 	console.log(err);
+		// });
+	
+		xhr = new XMLHttpRequest();
+		var url = tab.url;
+
+		xhr.open('GET', url, true);
+		xhr.responseType = "arraybuffer";
+
+		xhr.onload = function() {
+			if (isPdfFile(this, url)) {
+
+			console.log("This page is PDF: " + url);
+			notifyMe(url);
+			
+			//runNativeApp();
+				
+			} else {
+				// The page is HTML file
+				// Do nothing.
+			}
+		}
+		xhr.send(null);
+	}
+});
+// Codes when Browser load the page
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -139,11 +186,11 @@ function notifyMe(url) {
 
 }
 
+
 /* Respond to the user's clicking one of the buttons */
 chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 		if (notifId === myNotificationID) {
 				if (btnIdx === 0) {
-						runNativeApp();
 						// chrome.notifications.clear(notifId)
 						
 						chrome.notifications.update(notifId, {
@@ -156,6 +203,21 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 						}, function(id) {
 								myNotificationID = id;
 						});
+
+						
+						//launch worker task
+						var pdfData = {"responseURL": null, "size":0, "pdf":null};
+
+						////////////////////////////
+						// bufferarray - scenario //
+						////////////////////////////
+						byteArray = new Uint8Array(xhr.response);
+						pdfData.responseURL = xhr.responseURL;
+						pdfData.size = byteArray.length;
+						pdfData.pdf = byteArray;
+
+						connectNativeApp(pdfData);
+						
 
 				} else if (btnIdx === 1) {
 						chrome.notifications.clear(notifId)
@@ -182,114 +244,11 @@ chrome.notifications.onClosed.addListener(function(notifId) {
 
 
 
-
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-// Codes when Browser load the page
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-
-	if(changeInfo.status == "loading"){
-			fetch(tab.url).then(function(response) {
-				var contentType = response.headers.get("content-type");
-	  		if(contentType && contentType.indexOf("application/pdf") !== -1) {
-	  			console.log("This page is PDF");
-	    		notifyMe(response.url);
-	    		console.log(response.locked);
-	    
-	  		} else {
-	  			// Do Nothing.
-	  		}
-
-			}).catch(function(err) {
-				console.log("Fetch: error occured");
-				console.log(err);
-
-			});
-	}
-	// xhr = new XMLHttpRequest();
-	// var url = tab.url;
-
-	// xhr.open('GET', url, true);
-	// xhr.responseType = "arraybuffer";
-
-	// xhr.onload = function() {
-	// 	if (isPdfFile(this, url)) {
-	// 		//chrome.browserAction.show(tabId);
-	// 		console.log(url);
-	// 		console.log("This page is PDF -- page action is activated.");
-		
-	// 	//TODO: show pop-up window 
-		
-	// 	// Show confirmation dialog box for user choice.
-	// 	// var x;
-	// 	// if (confirm("Do you wanna extract this PDF?") == true) {
-	// 	//     x = "Okay, start extracting..";
-	// 	//     console.log("Native App will be launched");
-	// 	// } else {
-	// 	//     x = "Do nothing.";
-	// 	// }
-	// 	// console.log(x);
-
-	// 	// setPopup only set the specified html for pop-up. it does not show pop-up.
-	//     chrome.browserAction.setPopup({
-	//     		"popup": "popup.html"
-	// 		});
-		
-	// 	notifyMe(url);
-
-	// 	console.log("You must have seen the popup window...");
-		
-	// 	//runNativeApp();
-			
-	// 	//chrome.browserAction.popup({url : "popup.html"}); 
-	// 	} else {
-	// 		// The page is HTML file
-	// 	}
-	// }
-
-	// xhr.send(null);
-});
-
-// chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-//     console.log(tabId);
-//     if (domains.contains(tab.url)) {
-//         chrome.browserAction.setPopup({
-//             tabId: tabId,
-//             popup: 'popup.html'
-//         });
-//     } else {
-//         chrome.browserAction.setPopup({
-//             tabId: tabId,
-//             popup: 'popup.html'
-//         });
-//     }
-// });
-
-function runNativeApp(){
-		
-		console.log(xhr);
-		pdfData = {"responseURL": null, "size":0, "pdf":null};
-
-		////////////////////////////
-		// bufferarray - scenario //
-		////////////////////////////
-		byteArray = new Uint8Array(xhr.response);
-		pdfData.responseURL = xhr.responseURL;
-		pdfData.size = byteArray.length;
-		pdfData.pdf = byteArray;
-
-		/////////////////////
-		// output //
-		/////////////////////
-		console.log(pdfData.responseURL)
-		console.log(pdfData.size);
-		console.log(pdfData.pdf);
-		connectNativeApp();  
-}
-
-function connectNativeApp() {
-	console.log("Connecting to NativeApp...");
+// Codes for host program
+function connectNativeApp(pdfData) {
 	var hostName = "org.factpub.factify";
 
 	port = chrome.runtime.connectNative(hostName);
@@ -313,3 +272,7 @@ function onDisconnected() {
 	port = null;
 	//updateUiState();
 }
+// Codes for host program
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
