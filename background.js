@@ -105,7 +105,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					notifyMe(url);
 					
 					//runNativeApp();
-						
+					
 					} else {
 						// The page is HTML file
 						// Do nothing.
@@ -119,7 +119,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					type:    "basic",
 					iconUrl: "icon_no.png",
 					title:   "Factify Chrome",
-					message: "[Error] actpub.org server seems not alive.",
+					message: "[Error] factpub.org server seems not alive.",
 					contextMessage: response.status + " " + response.statusText
 				}, function(id) {
 					myNotificationID = id;
