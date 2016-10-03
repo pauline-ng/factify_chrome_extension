@@ -119,7 +119,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					type:    "basic",
 					iconUrl: "icon_no.png",
 					title:   "Factify Chrome",
-					message: "[Error] factpub.org server seems not alive.",
+					message: "[Error] factpub.org server seems down.",
 					contextMessage: response.status + " " + response.statusText
 				}, function(id) {
 					myNotificationID = id;
