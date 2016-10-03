@@ -19,7 +19,8 @@
 
 const handlerUrl = "http://factpub.org:8080/collectChromeActivity?";
 var chromeToken = null;
-var factpubId = null;
+var factpubId = "Anonymous";
+
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -80,22 +81,22 @@ function getRandomToken() {
 // storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
 // storage.local => the token is only valid for one machine
 chrome.storage.sync.get('userid', function(items) {
-		var userid = items.userid;
-		if (userid) {
-			// if token exists
-				useToken(userid);
-		} else {
-			// if token does not exist
-				userid = getRandomToken();
-				chrome.storage.sync.set({userid: userid}, function() {
-						useToken(userid);
-				});
-		}
-		function useToken(userid) {
-				// TODO: Use user id for authentication or whatever you want.
-				console.log("The stored token for Factify Chrome: " + userid)
-				chromeToken = userid;
-		}
+	var userid = items.userid;
+	if (userid) {
+		// if token exists
+			useToken(userid);
+	} else {
+		// if token does not exist
+			userid = getRandomToken();
+			chrome.storage.sync.set({userid: userid}, function() {
+					useToken(userid);
+			});
+	}
+	function useToken(userid) {
+			// TODO: Use user id for authentication or whatever you want.
+			console.log("The stored token for Factify Chrome: " + userid)
+			chromeToken = userid;
+	}
 });
 // Codes for generate unique token
 ////////////////////////////////////////////////////////////////////////////
@@ -129,7 +130,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					console.log("This page is PDF: " + url);
 
 					// Send User Activity to serverRequestHandler
-					sendUserActivityToServer(chromeToken, url);
+					chrome.storage.sync.get('factpubId', function(items) {
+						factpubId = items.factpubId;
+						console.log("FactPub ID: " + factpubId)
+						sendUserActivityToServer(factpubId, chromeToken, url);
+					});
+					
+
+					//console.log("Storage: " + localStorage["factpubId"])
 
 					// Notification: Ask user to factify PDF or not.							
 					var nt = chrome.notifications.create("", {
@@ -257,15 +265,14 @@ chrome.notifications.onClosed.addListener(function(notifId) {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-function sendUserActivityToServer(chromeToken, url){
+function sendUserActivityToServer(factpubId, chromeToken, url){
 	fetch(handlerUrl
 		 + "factpubId=" + factpubId
 		 + "&chromeToken=" + chromeToken
 		 + "&url=" + url
-		 , {method: "POST"
-	}).then(function(handlerRes){	
+		 , {method: "POST"}
+	).then(function(handlerRes){	
 		console.log("POST request was made")
-		console.log(handlerRes.body)
 
 	}).catch(function(handlerErr){
 		console.log("[Error] POST request cause error.")
