@@ -87,43 +87,51 @@ chrome.storage.sync.get('userid', function(items) {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 	if(changeInfo.status == "complete"){
-		
-		// 
-		// fetch(tab.url).then(function(response) {
-		// 	var contentType = response.headers.get("content-type");
-	  // 		if(contentType && contentType.indexOf("application/pdf") !== -1) {
-	  // 			console.log("This page is PDF");
-	  //   		notifyMe(response.url);
-	  //   		console.log("Responsse: " + response.blob);
-	  //   		console.log("Body: " + response.body);
-	  // 		} else {
-	  // 			// Do Nothing.
-	  // 		}
-  	// }).catch(function(err) {
-		// 	console.log("Fetch: error occured");
-		// 	console.log(err);
-		// });
 	
-		xhr = new XMLHttpRequest();
-		var url = tab.url;
+		//TODO: check if serverRequestHandler is alive
+		var handlerUrl = "http://factpub.org:8080/get/";
+		fetch(handlerUrl).then(function(response) {
+			if(response.status == 200){
+				xhr = new XMLHttpRequest();
+				var url = tab.url;
 
-		xhr.open('GET', url, true);
-		xhr.responseType = "arraybuffer";
+				xhr.open('GET', url, true);
+				xhr.responseType = "arraybuffer";
 
-		xhr.onload = function() {
-			if (isPdfFile(this, url)) {
+				xhr.onload = function() {
+					if (isPdfFile(this, url)) {
 
-			console.log("This page is PDF: " + url);
-			notifyMe(url);
-			
-			//runNativeApp();
-				
-			} else {
-				// The page is HTML file
-				// Do nothing.
+					console.log("This page is PDF: " + url);
+					notifyMe(url);
+					
+					//runNativeApp();
+						
+					} else {
+						// The page is HTML file
+						// Do nothing.
+					}
+				}
+				xhr.send(null);
+
+			}else{
+				// response.status == 404
+				var nt = chrome.notifications.create("", {
+					type:    "basic",
+					iconUrl: "icon_no.png",
+					title:   "Factify Chrome",
+					message: "[Error] actpub.org server seems not alive.",
+					contextMessage: response.status + " " + response.statusText
+				}, function(id) {
+					myNotificationID = id;
+				});
 			}
-		}
-		xhr.send(null);
+
+	  	}).catch(function(err) {
+			console.log("[Error] serverRequestHandler is not alive.");
+			console.log(err);
+			
+		});
+
 	}
 });
 // Codes when Browser load the page
@@ -173,9 +181,9 @@ function notifyMe(url) {
 						title: "No.",
 						iconUrl: "icon_no.png"
 				}]
-		}, function(id) {
-				myNotificationID = id;
-		});
+				}, function(id) {
+						myNotificationID = id;
+				});
 		// notification.onclick = function () {
 		//   console.log("start Factify: " + url)
 		//   confirm("wanna factify?");
