@@ -127,7 +127,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 			}
 
 	  	}).catch(function(err) {
-			console.log("[Error] serverRequestHandler is not alive.");
+			console.log("[Error] Unknown Error Occured.");
 			console.log(err);
 			
 		});
