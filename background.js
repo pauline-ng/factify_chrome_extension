@@ -16,6 +16,11 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+const handlerUrl = "http://factpub.org:8080/collectChromeActivity?";
+var chromeToken = null;
+var factpubId = null;
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -30,6 +35,25 @@ function isPdfFile(response, url) {
 	}
 }
 // Codes for checking if the page is PDF
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+// Preprocessing codes for notification: request permission on page load
+document.addEventListener('DOMContentLoaded', function () {
+	if (!Notification) {
+		alert('Desktop notifications not available in your browser.'); 
+		return;
+	}
+
+	if (Notification.permission !== "granted")
+		Notification.requestPermission();
+});
+// Preprocessing codes for notification: request permission on page load
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -55,7 +79,6 @@ function getRandomToken() {
 // https://developer.chrome.com/extensions/storage
 // storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
 // storage.local => the token is only valid for one machine
-
 chrome.storage.sync.get('userid', function(items) {
 		var userid = items.userid;
 		if (userid) {
@@ -71,8 +94,10 @@ chrome.storage.sync.get('userid', function(items) {
 		function useToken(userid) {
 				// TODO: Use user id for authentication or whatever you want.
 				console.log("The stored token for Factify Chrome: " + userid)
+				chromeToken = userid;
 		}
 });
+// Codes for generate unique token
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -87,9 +112,9 @@ chrome.storage.sync.get('userid', function(items) {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 	if(changeInfo.status == "complete"){
-	
+	var myNotificationID = null;
+
 		//TODO: check if serverRequestHandler is alive
-		var handlerUrl = "http://factpub.org:8080/get/";
 		fetch(handlerUrl).then(function(response) {
 			if(response.status == 200){
 				xhr = new XMLHttpRequest();
@@ -102,9 +127,32 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					if (isPdfFile(this, url)) {
 
 					console.log("This page is PDF: " + url);
-					notifyMe(url);
-					
-					//runNativeApp();
+
+					// Send User Activity to serverRequestHandler
+					sendUserActivityToServer(chromeToken, url);
+
+					// Notification: Ask user to factify PDF or not.							
+					var nt = chrome.notifications.create("", {
+						type:    "basic",
+						iconUrl: "icon.png",
+						title:   "Factify Chrome",
+						message: url,
+						contextMessage: "Send facts of this paper?",
+
+						// Only be able to show up till two buttons
+						// https://developer.chrome.com/apps/richNotifications#behave
+						buttons: [{
+								title: "Yes, donate facts to factpub.org",
+								iconUrl: "icon_yes.png"
+						}, {
+								title: "No.",
+								iconUrl: "icon_no.png"
+						}]
+						}, function(id) {
+								myNotificationID = id;
+						});
+
+						console.log("notification" + nt)
 					
 					} else {
 						// The page is HTML file
@@ -114,12 +162,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 				xhr.send(null);
 
 			}else{
+				// Show Error notification if serverRequestHandler does not have handler.
 				// response.status == 404
+
+				console.log("[Error] factpub.org: server process seems not to exist.");
 				var nt = chrome.notifications.create("", {
 					type:    "basic",
 					iconUrl: "icon_no.png",
 					title:   "Factify Chrome",
-					message: "[Error] factpub.org server seems down.",
+					message: "[Error] factpub.org: server process not exist.",
 					contextMessage: response.status + " " + response.statusText
 				}, function(id) {
 					myNotificationID = id;
@@ -127,9 +178,20 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 			}
 
 	  	}).catch(function(err) {
-			console.log("[Error] Unknown Error Occured.");
+			console.log("[Error] factpub.org: server process seems down.");
 			console.log(err);
-			
+
+				// Show Error notification if serverRequestHandler is down.
+				// response.status == 404
+				var nt = chrome.notifications.create("", {
+					type:    "basic",
+					iconUrl: "icon_no.png",
+					title:   "Factify Chrome",
+					message: "[Error] factpub.org: server seems down.",
+					contextMessage: err.toString()
+				}, function(id) {
+					myNotificationID = id;
+				});
 		});
 
 	}
@@ -138,61 +200,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-
-
-
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-// Codes for notification
-// request permission on page load
-document.addEventListener('DOMContentLoaded', function () {
-	if (!Notification) {
-		alert('Desktop notifications not available in your browser.'); 
-		return;
-	}
-
-	if (Notification.permission !== "granted")
-		Notification.requestPermission();
-});
-
-var myNotificationID = null;
-var myNotification = {}; //Hashmap
-
-function notifyMe(url) {
-	if (Notification.permission !== "granted")
-		Notification.requestPermission();
-	else {
-
-			var nt = chrome.notifications.create("", {
-				type:    "basic",
-				iconUrl: "icon.png",
-				title:   "Factify Chrome",
-				message: url,
-				contextMessage: "Send facts of this paper?",
-
-				// Only be able to show up till two buttons
-				// https://developer.chrome.com/apps/richNotifications#behave
-				buttons: [{
-						title: "Yes, donate facts to factpub.org",
-						iconUrl: "icon_yes.png"
-				}, {
-						title: "No.",
-						iconUrl: "icon_no.png"
-				}]
-				}, function(id) {
-						myNotificationID = id;
-				});
-		// notification.onclick = function () {
-		//   console.log("start Factify: " + url)
-		//   confirm("wanna factify?");
-		// };
-			console.log("notification" + nt)
-//		myNotifications[] = 
-	}
-
-}
 
 
 /* Respond to the user's clicking one of the buttons */
@@ -250,7 +257,23 @@ chrome.notifications.onClosed.addListener(function(notifId) {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
+function sendUserActivityToServer(chromeToken, url){
+	fetch(handlerUrl
+		 + "factpubId=" + factpubId
+		 + "&chromeToken=" + chromeToken
+		 + "&url=" + url
+		 , {method: "POST"
+	}).then(function(handlerRes){	
+		console.log("POST request was made")
+		console.log(handlerRes.body)
 
+	}).catch(function(handlerErr){
+		console.log("[Error] POST request cause error.")
+		console.log(handlerErr)
+	
+	})
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
