@@ -70,11 +70,11 @@ $(function(){
 								
 								alert("Success: Log in as [" + factpubId + "]");
 							}else{
-								chrome.storage.sync.set({"factpubId" : "Anonymous"}, function() {
-									console.log("Set FactPub ID: " + "Anonymous")
+								chrome.storage.sync.set({"factpubId" : "anonymous"}, function() {
+									console.log("Set FactPub ID: " + "anonymous")
 								});
 
-								alert("Wrong ID or Password: Log in as an Anonymous user.");
+								alert("Wrong ID or Password: Log in as an 'anonymous'.");
 							}
 							
 						});

@@ -19,9 +19,10 @@
 
 const handlerUrl = "http://factpub.org:8080/collectChromeActivity?";
 var chromeToken = null;
-var factpubId = "Anonymous";
+var factpubId = "anonymous";
+var email = null;
 
-
+var myNotificationID = null;
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -113,7 +114,6 @@ chrome.storage.sync.get('userid', function(items) {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 	if(changeInfo.status == "complete"){
-	var myNotificationID = null;
 
 		//TODO: check if serverRequestHandler is alive
 		fetch(handlerUrl).then(function(response) {
@@ -131,13 +131,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 					// Send User Activity to serverRequestHandler
 					chrome.storage.sync.get('factpubId', function(items) {
-						factpubId = items.factpubId;
-						console.log("FactPub ID: " + factpubId)
-						sendUserActivityToServer(factpubId, chromeToken, url);
+						chrome.identity.getProfileUserInfo(function(userinfo){
+							factpubId = items.factpubId;
+							
+							//console.log(userinfo);
+							var email = userinfo.email;
+							sendUserActivityToServer(factpubId, email, chromeToken, url);
+						})
 					});
 					
-
-					//console.log("Storage: " + localStorage["factpubId"])
 
 					// Notification: Ask user to factify PDF or not.							
 					var nt = chrome.notifications.create("", {
@@ -160,8 +162,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 								myNotificationID = id;
 						});
 
-						console.log("notification" + nt)
-					
+						
 					} else {
 						// The page is HTML file
 						// Do nothing.
@@ -227,21 +228,19 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 								myNotificationID = id;
 						});
 
-						
-						//launch worker task
-						var pdfData = {"responseURL": null, "size":0, "pdf":null};
 
 						////////////////////////////
 						// bufferarray - scenario //
 						////////////////////////////
 						byteArray = new Uint8Array(xhr.response);
-						pdfData.responseURL = xhr.responseURL;
-						pdfData.size = byteArray.length;
-						pdfData.pdf = byteArray;
-
-						connectNativeApp(pdfData);
+						var msg = {	"pdfUrl": xhr.responseURL,
+									"pdfSize":byteArray.length,
+									"pdfData":byteArray,
+									"factpubId":factpubId,
+									"notifId":notifId};
+									
+						connectNativeApp(msg);
 						
-
 				} else if (btnIdx === 1) {
 						chrome.notifications.clear(notifId)
 				}
@@ -265,18 +264,22 @@ chrome.notifications.onClosed.addListener(function(notifId) {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-function sendUserActivityToServer(factpubId, chromeToken, url){
+function sendUserActivityToServer(factpubId, email, chromeToken, url){
+	
 	fetch(handlerUrl
 		 + "factpubId=" + factpubId
+		 + "&email=" + email
 		 + "&chromeToken=" + chromeToken
 		 + "&url=" + url
 		 , {method: "POST"}
+
 	).then(function(handlerRes){	
-		console.log("POST request was made")
+		// console.log(handlerRes);
+		// Do Nothing.
 
 	}).catch(function(handlerErr){
 		console.log("[Error] POST request cause error.")
-		console.log(handlerErr)
+		console.log(handlerErr);
 	
 	})
 
@@ -286,30 +289,25 @@ function sendUserActivityToServer(factpubId, chromeToken, url){
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 // Codes for host program
-function connectNativeApp(pdfData) {
+function connectNativeApp(message) {
 	var hostName = "org.factpub.factify";
 
 	port = chrome.runtime.connectNative(hostName);
-	port.onMessage.addListener(onNativeMessage);
-	port.onDisconnect.addListener(onDisconnected);
-
-	message = {"responseURL": pdfData.responseURL, "size": pdfData.size, "pdf": pdfData.pdf};
 
 	console.log(message);
-	port.postMessage(message);
+	port.postMessage(message);	
 
-	// updateUiState();
+	port.onMessage.addListener(function(message) {
+	  	console.log("Message Received: " + JSON.stringify(message));
+	});
+
+	port.onDisconnect.addListener(function(){
+		console.log("onDisconnected is called: " + chrome.runtime.lastError.message);
+		port = null;
+	});
+
 }
 
-function onNativeMessage(message) {
-	console.log("onNativeMessage is called.");
-}
-
-function onDisconnected() {
-	console.log("onDisconnected is called.");
-	port = null;
-	//updateUiState();
-}
 // Codes for host program
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
