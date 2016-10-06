@@ -140,7 +140,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 						})
 					});
 
-
 					// Notification: Ask user to factify PDF or not.
 					var nt = chrome.notifications.create("", {
 						type:    "basic",
@@ -215,11 +214,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 		if (notifId === myNotificationID) {
 				if (btnIdx === 0) {
-						// chrome.notifications.clear(notifId)
 
-						////////////////////////////
-						// bufferarray - scenario //
-						////////////////////////////
 						byteArray = new Uint8Array(xhr.response);
 						var msg = {	"pdfUrl": xhr.responseURL,
 									"pdfSize":byteArray.length,
@@ -227,50 +222,7 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 									"factpubId":factpubId,
 									"notifId":notifId};
 
-						var port = connectNativeApp(msg);
-
-						port.onDisconnect.addListener(function(){
-							var message = chrome.runtime.lastError.message;
-							var notFound = "Specified native messaging host not found."
-
-							if(message == notFound){
-								// Notification: Ask user to factify PDF or not.
-								var nt = chrome.notifications.update(notifId, {
-									type:    "basic",
-									iconUrl: "icon_no.png",
-									title:   "Factify Chrome",
-									message: "Click here to install the host program.",
-									contextMessage: "The host program was not found.",
-
-									}, function(id) {
-											myNotificationID = id;
-									});
-							}
-							port = null;
-
-							console.log("[Error] The host program is not installed.")
-							chrome.notifications.onClicked.addListener(function(notifId) {
-
-								var OSName="Unknown OS";
-								if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-								if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-								if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-								if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
-
-								console.log('Your OS: '+ OSName);
-
-								//if(OSName == "Windows"){}
-								window.open("http://factpub.org/html/contribute.html");
-
-								chrome.notifications.clear(notifId)
-							});
-						})
-
-
-						port.onMessage.addListener(function(message) {
-						  	console.log("Message Received: " + JSON.stringify(message));
-						});
-
+						connectNativeApp(msg, notifId);
 
 						chrome.notifications.update(notifId, {
 						type:    "progress",
@@ -324,14 +276,56 @@ function sendUserActivityToServer(factpubId, email, chromeToken, url){
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 // Codes for host program
-function connectNativeApp(message) {
+function connectNativeApp(message, notifId) {
 	var hostName = "org.factpub.factify";
 
 	port = chrome.runtime.connectNative(hostName);
-
 	console.log(message);
 	port.postMessage(message);
+	port.name = notifId
 
+	port.onDisconnect.addListener(function(port){
+
+		var message = chrome.runtime.lastError.message;
+		var notFound = "Specified native messaging host not found.";
+		// var appExit = "Native host has exited.";
+
+		console.log(message + " : " + port.name);
+		if(message == notFound){
+			// Notification: Ask user to factify PDF or not.
+			var nt = chrome.notifications.update(port.name, {
+				type:    "basic",
+				iconUrl: "icon_no.png",
+				title:   "Factify Chrome",
+				message: "[Error] The host program was not found.",
+				contextMessage: "Click here to install the host program.",
+
+				}, function(id) {
+						myNotificationID = id;
+				});
+				console.log("[Error] The host program is not installed.")
+				port = null;
+		}
+
+		// Redirect to download installation scripts.
+		chrome.notifications.onClicked.addListener(function(notifId) {
+			var OSName="Unknown OS";
+			if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+			if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+			if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+			if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+
+			console.log('Your OS: '+ OSName);
+
+			window.open("http://factpub.org/html/contribute.html");
+
+			chrome.notifications.clear(notifId)
+		});
+	})
+
+	port.onMessage.addListener(function(message, port) {
+			console.log("Message from " + port.name + " Received: " + JSON.stringify(message));
+	});
 	// port.onMessage.addListener(function(message) {
 	//   	console.log("Message Received: " + JSON.stringify(message));
 	// });
