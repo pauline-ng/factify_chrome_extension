@@ -1,9 +1,8 @@
 {
-	"key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDcBHwzDvyBQ6bDppkIs9MP4ksKqCMyXQ/A52JivHZKh4YO/9vJsT3oaYhSpDCE9RPocOEQvwsHsFReW2nUEc6OLLyoCFFxIb7KkLGsmfakkut/fFdNJYh0xOTbSN8YvLWcqph09XAY2Y/f0AL7vfO1cuCqtkMt8hFrBGWxDdf9CQIDAQAB",
-
+	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhvFM6xB/2H4F7rSChCiT9F1okfZen7UiuhUSBWxVvDWpAuXag00OsJ3Lyd1Pca8vMrbNGyg/0sspUmF1POZrtkmovltFwi+TTZAzHMG4mYdETUgN26DVNYzJgsaM2k92Hc+V1MpQeiZP82yvpQe8V83LOTdw3rs9pXkM7Udogx7Xh/uxWRYtuUmtWMfTDD4/gbgX8XcKemEon4cjp3F0wNKIN5pz6g4CFFOg4JOTEKOWMsZoYRrYO/zZKEiVN2M33ossdas0stgOiZHyOfaANjGQnC1Fhe9OhgAlHA6QUXDiE3tDhBqBzKj+aco0ze6qY7BpqIgit59d0eQis2Sh1wIDAQAB",
 	"name": "Factify Chrome",
 	"author": "Sun SAGONG",
-	"version": "0.5.5",
+	"version": "0.5.7",
 	"manifest_version": 2,
 	"description": "Factify Chrome Extension by using NativeMessaging",
 	"icons": {
