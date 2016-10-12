@@ -21,8 +21,8 @@ const handlerUrl = "http://factpub.org:8080/collectChromeActivity?";
 var chromeToken = null;
 var factpubId = "anonymous";
 var email = null;
-
 var myNotificationID = null;
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -141,12 +141,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					});
 
 					// Notification: Ask user to factify PDF or not.
-					var nt = chrome.notifications.create("", {
+					var nt = chrome.notifications.create("",{
 						type:    "basic",
 						iconUrl: "icon.png",
 						title:   "Factify Chrome",
 						message: url,
 						contextMessage: "Send facts of this paper?",
+						requireInteraction: true,
 
 						// Only be able to show up till two buttons
 						// https://developer.chrome.com/apps/richNotifications#behave
@@ -159,7 +160,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 						}]
 						}, function(id) {
 								myNotificationID = id;
-						});
+					});
 
 
 					} else {
@@ -222,18 +223,19 @@ chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 									"factpubId":factpubId,
 									"notifId":notifId};
 
-						connectNativeApp(msg, notifId);
-
 						chrome.notifications.update(notifId, {
 						type:    "progress",
-						contextMessage: "Launching extraction process...",
+						message: "(0/5) Launching the host program.",
+						contextMessage: msg.pdfUrl,
 						iconUrl: "icon_yes.png",
-						progress: 5,
+						progress: 1,
 						buttons: []
 
 						}, function(id) {
 								myNotificationID = id;
 						});
+
+						connectNativeApp(msg, notifId);
 
 				} else if (btnIdx === 1) {
 						chrome.notifications.clear(notifId)
@@ -293,7 +295,7 @@ function connectNativeApp(message, notifId) {
 		console.log(message + " : " + port.name);
 		if(message == notFound){
 			// Notification: Ask user to factify PDF or not.
-			var nt = chrome.notifications.update(port.name, {
+			var nt = chrome.notifications.update(notifId, {
 				type:    "basic",
 				iconUrl: "icon_no.png",
 				title:   "Factify Chrome",
@@ -308,32 +310,106 @@ function connectNativeApp(message, notifId) {
 		}
 
 		// Redirect to download installation scripts.
-		chrome.notifications.onClicked.addListener(function(notifId) {
-			var OSName="Unknown OS";
-			if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-			if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-			if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-			if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
-
-			console.log('Your OS: '+ OSName);
-
-			window.open("http://factpub.org/html/contribute.html");
-
-			chrome.notifications.clear(notifId)
-		});
+		// chrome.notifications.onClicked.addListener(function(notifId) {
+		// 	var OSName="Unknown OS";
+		// 	if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+		// 	if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+		// 	if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+		// 	if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+		//
+		// 	console.log('Your OS: '+ OSName);
+		//
+		// 	window.open("http://factpub.org/html/contribute.html");
+		//
+		// 	chrome.notifications.clear(notifId)
+		// });
 	})
 
+
+
+
 	port.onMessage.addListener(function(message, port) {
-			console.log("Message from " + port.name + " Received: " + JSON.stringify(message));
+
+		console.log(port.name + " Message Received: " + JSON.stringify(message));
+
+		chrome.notifications.onClicked.addListener(function(notifId) {
+			// nullify onClicked
+		});
+
+		var STEP_1_END = "(1/5)Receiving PDF data from extension.";
+		var STEP_2_END = "(2/5)Initializing Rule_Matching files.";
+		var STEP_3_END = "(3/5)Running extraction process.";
+		var STEP_4_END = "(4/5)Sending facts to factpub.org.";
+		var STEP_5_END = "(5/5)Facts are donated.";
+
+		if("steps" in message){
+
+			switch(message.steps){
+				case STEP_1_END:
+						chrome.notifications.update(notifId, {
+							type:    "progress",
+							message: STEP_1_END,
+							progress: 10
+						});
+					break;
+
+				case STEP_2_END:
+						chrome.notifications.update(notifId, {
+							type:    "progress",
+							message: STEP_2_END,
+							progress: 20
+						});
+					break;
+
+				case STEP_3_END:
+						chrome.notifications.update(notifId, {
+							type:    "progress",
+							message: STEP_3_END,
+							progress: 35
+						});
+					break;
+
+				case STEP_4_END:
+						chrome.notifications.update(notifId, {
+							type:    "progress",
+							message: STEP_4_END,
+							progress: 70
+						});
+					break;
+
+				case STEP_5_END:
+						chrome.notifications.update(notifId, {
+							type:    "progress",
+							message: STEP_5_END,
+							progress: 95
+						});
+					break;
+			}
+		}else if("url" in message){
+			chrome.notifications.onClicked.addListener(function(notifId) {
+				window.open(message.url);
+				chrome.notifications.clear(notifId)
+			});
+
+			chrome.notifications.update(notifId, {
+				type:    "progress",
+				message: "[Click here to browse the donated facts.]\n"+ message.url,
+				contextMessage: STEP_5_END,
+				iconUrl: "icon.png",
+				progress: 100
+			});
+
+		}else if("error" in message){
+			chrome.notifications.update(notifId, {
+				type:    "basic",
+				message: message.error,
+				iconUrl: "icon_no.png"
+			});
+
+		}
+
 	});
-	// port.onMessage.addListener(function(message) {
-	//   	console.log("Message Received: " + JSON.stringify(message));
-	// });
-	//
-	// port.onDisconnect.addListener(function(){
-	// 	console.log("onDisconnected is called: " + chrome.runtime.lastError.message);
-	// 	port = null;
-	// 	})
+
 
 	return port;
 }
