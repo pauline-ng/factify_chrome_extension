@@ -290,11 +290,11 @@ function connectNativeApp(message, notifId) {
 
 		var message = chrome.runtime.lastError.message;
 		var notFound = "Specified native messaging host not found.";
+		var notAccessible = "Access to the specified native messaging host is forbidden.";
 		// var appExit = "Native host has exited.";
 
 		console.log(message + " : " + port.name);
 		if(message == notFound){
-			// Notification: Ask user to factify PDF or not.
 			var nt = chrome.notifications.update(notifId, {
 				type:    "basic",
 				iconUrl: "icon_no.png",
@@ -306,6 +306,19 @@ function connectNativeApp(message, notifId) {
 						myNotificationID = id;
 				});
 				console.log("[Error] The host program is not installed.")
+				port = null;
+		}else if(message == notAccessible){
+			var nt = chrome.notifications.update(notifId, {
+				type:    "basic",
+				iconUrl: "icon_no.png",
+				title:   "Factify Chrome",
+				message: "[Error] Extension ID not registered.\n" + chrome.runtime.id,
+				contextMessage: "Click here to install the host program.",
+
+				}, function(id) {
+						myNotificationID = id;
+				});
+				console.log("[Error] Caller id is not registered.")
 				port = null;
 		}
 
