@@ -405,10 +405,10 @@ function connectNativeApp(message, notifId) {
 		}else if("url" in message){
 
 			// FIXME: Multiple url is shown...
-			// chrome.notifications.onClicked.addListener(function(notifId) {
-			// 	window.open(message.url);
-			// 	chrome.notifications.clear(notifId)
-			// });
+			chrome.notifications.onClicked.addListener(function(notifId) {
+				window.open(message.url);
+				chrome.notifications.clear(notifId)
+			});
 
 			var nt = chrome.notifications.update(notifId, {
 				type:    "progress",
@@ -417,11 +417,6 @@ function connectNativeApp(message, notifId) {
 				iconUrl: "icon.png",
 				progress: 100
 			});
-
-			console.log(message.url);
-			nt.onCicked = function(){
-				window.open(message.url);
-			};
 
 		}else if("error" in message){
 			chrome.notifications.update(notifId, {
