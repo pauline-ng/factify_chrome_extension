@@ -132,7 +132,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					// Send User Activity to serverRequestHandler
 					chrome.storage.sync.get('factpubId', function(items) {
 						chrome.identity.getProfileUserInfo(function(userinfo){
-							factpubId = items.factpubId;
+							if(items.factpubId == undefined){
+								factpubId = "anonymous";
+							}else{
+								factpubId = items.factpubId;
+							};
 
 							//console.log(userinfo);
 							var email = userinfo.email;
