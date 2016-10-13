@@ -403,18 +403,25 @@ function connectNativeApp(message, notifId) {
 					break;
 			}
 		}else if("url" in message){
-			chrome.notifications.onClicked.addListener(function(notifId) {
-				window.open(message.url);
-				chrome.notifications.clear(notifId)
-			});
 
-			chrome.notifications.update(notifId, {
+			// FIXME: Multiple url is shown...
+			// chrome.notifications.onClicked.addListener(function(notifId) {
+			// 	window.open(message.url);
+			// 	chrome.notifications.clear(notifId)
+			// });
+
+			var nt = chrome.notifications.update(notifId, {
 				type:    "progress",
 				message: "[Click here to browse the donated facts.]\n"+ message.url,
 				contextMessage: STEP_5_END,
 				iconUrl: "icon.png",
 				progress: 100
 			});
+
+			console.log(message.url);
+			nt.onCicked = function(){
+				window.open(message.url);
+			};
 
 		}else if("error" in message){
 			chrome.notifications.update(notifId, {
