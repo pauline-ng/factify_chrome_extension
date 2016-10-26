@@ -148,15 +148,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 					var nt = chrome.notifications.create("",{
 						type:    "basic",
 						iconUrl: "icon.png",
-						title:   "Factify Chrome",
-						message: url,
-						contextMessage: "Send facts of this paper?",
+						title:   "Factify",
+						message: "Donate facts of this paper?",
+						contextMessage: url,
 						requireInteraction: true,
 
 						// Only be able to show up till two buttons
 						// https://developer.chrome.com/apps/richNotifications#behave
 						buttons: [{
-								title: "Yes, donate facts to factpub.org",
+								title: "Yes.",
 								iconUrl: "icon_yes.png"
 						}, {
 								title: "No.",
@@ -182,7 +182,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 				var nt = chrome.notifications.create("", {
 					type:    "basic",
 					iconUrl: "icon_no.png",
-					title:   "Factify Chrome",
+					title:   "Factify",
 					message: "[Error] factpub.org: server process not exist.",
 					contextMessage: response.status + " " + response.statusText
 				}, function(id) {
@@ -199,7 +199,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 				var nt = chrome.notifications.create("", {
 					type:    "basic",
 					iconUrl: "icon_no.png",
-					title:   "Factify Chrome",
+					title:   "Factify",
 					message: "[Error] factpub.org: server seems down.",
 					contextMessage: err.toString()
 				}, function(id) {
@@ -302,7 +302,7 @@ function connectNativeApp(message, notifId) {
 			var nt = chrome.notifications.update(notifId, {
 				type:    "basic",
 				iconUrl: "icon_no.png",
-				title:   "Factify Chrome",
+				title:   "Factify",
 				message: "[Error] The host program was not found.",
 				contextMessage: "Click here to install the host program.",
 
@@ -315,7 +315,7 @@ function connectNativeApp(message, notifId) {
 			var nt = chrome.notifications.update(notifId, {
 				type:    "basic",
 				iconUrl: "icon_no.png",
-				title:   "Factify Chrome",
+				title:   "Factify",
 				message: "[Error] Extension ID not registered.\n" + chrome.runtime.id,
 				contextMessage: "Click here to install the host program.",
 
@@ -365,7 +365,7 @@ function connectNativeApp(message, notifId) {
 				case STEP_1_END:
 						chrome.notifications.update(notifId, {
 							type:    "progress",
-							message: STEP_1_END,
+							message: "(1/5)Reading PDF.",
 							progress: 10
 						});
 					break;
@@ -373,7 +373,7 @@ function connectNativeApp(message, notifId) {
 				case STEP_2_END:
 						chrome.notifications.update(notifId, {
 							type:    "progress",
-							message: STEP_2_END,
+							message: "Initializing extractor.",
 							progress: 20
 						});
 					break;
@@ -381,7 +381,7 @@ function connectNativeApp(message, notifId) {
 				case STEP_3_END:
 						chrome.notifications.update(notifId, {
 							type:    "progress",
-							message: STEP_3_END,
+							message: "Extracting facts.",
 							progress: 35
 						});
 					break;
@@ -412,8 +412,8 @@ function connectNativeApp(message, notifId) {
 
 			var nt = chrome.notifications.update(notifId, {
 				type:    "progress",
-				message: "[Click here to browse the donated facts.]\n"+ message.url,
-				contextMessage: STEP_5_END,
+				message: "Click here!",
+				contextMessage: "Thank you for donating facts!",
 				iconUrl: "icon.png",
 				progress: 100
 			});
