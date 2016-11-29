@@ -23,6 +23,55 @@ var factpubId = "anonymous";
 var email = null;
 var myNotificationID = null;
 
+chrome.runtime.onInstalled.addListener(function(details){
+
+  var OSName="Unknown OS";
+  if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+  if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+  if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+  if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+
+  if(OSName == "Windows"){
+		chrome.tabs.create(
+			{url : "http://factpub.org/public/factify_ChromeExtension/install_scripts_win/setup.exe"}
+		);
+		chrome.tabs.create(
+			{url : "./instructions_win.html"}
+		);
+  }else if(OSName == "MacOS" || OSName == "UNIX" || OSName == "Linux"){
+		chrome.tabs.create(
+			{url : "http://factpub.org/public/factify_ChromeExtension/install_scripts_mac_linux/setup"}
+		);
+		chrome.tabs.create(
+			{url : "./instructions_mac_linux.html"}
+		);
+	};
+
+
+
+	// https://developer.chrome.com/extensions/storage
+	// storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
+	// storage.local => the token is only valid for one machine
+	chrome.storage.sync.get('userid', function(items) {
+		var userid = items.userid;
+		if (userid) {
+			// if token exists
+				useToken(userid);
+		} else {
+			// if token does not exist
+				userid = getRandomToken();
+				chrome.storage.sync.set({userid: userid}, function() {
+						useToken(userid);
+				});
+		}
+		function useToken(userid) {
+				// TODO: Use user id for authentication or whatever you want.
+				console.log("The stored token for Factify Chrome: " + userid)
+				chromeToken = userid;
+		}
+	});
+
+})
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -77,28 +126,6 @@ function getRandomToken() {
 		return hex;
 }
 
-
-// https://developer.chrome.com/extensions/storage
-// storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
-// storage.local => the token is only valid for one machine
-chrome.storage.sync.get('userid', function(items) {
-	var userid = items.userid;
-	if (userid) {
-		// if token exists
-			useToken(userid);
-	} else {
-		// if token does not exist
-			userid = getRandomToken();
-			chrome.storage.sync.set({userid: userid}, function() {
-					useToken(userid);
-			});
-	}
-	function useToken(userid) {
-			// TODO: Use user id for authentication or whatever you want.
-			console.log("The stored token for Factify Chrome: " + userid)
-			chromeToken = userid;
-	}
-});
 // Codes for generate unique token
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -412,7 +439,7 @@ function connectNativeApp(message, notifId) {
 
 			var nt = chrome.notifications.update(notifId, {
 				type:    "progress",
-				message: "Click here!",
+				message: "-----------Click here!-----------",
 				contextMessage: "Thank you for donating facts!",
 				iconUrl: "icon.png",
 				progress: 100
