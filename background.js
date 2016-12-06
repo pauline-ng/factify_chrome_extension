@@ -369,9 +369,6 @@ function connectNativeApp(message, notifId) {
 		// });
 	})
 
-
-
-
 	port.onMessage.addListener(function(message, port) {
 
 		console.log(port.name + " Message Received: " + JSON.stringify(message));
@@ -431,28 +428,45 @@ function connectNativeApp(message, notifId) {
 			}
 		}else if("url" in message){
 
-			// FIXME: Multiple url is shown...
-			chrome.notifications.onClicked.addListener(function(notifId) {
-				window.open(message.url);
-				chrome.notifications.clear(notifId)
-			});
+      if(message.url == "Page was not created - no title found."){
+        var nt = chrome.notifications.update(notifId, {
+          type:    "basic",
+          iconUrl: "icon_no.png",
+          title:   "Factify",
+          message: "Fact was sent but failed to create a page on FactPub",
+          contextMessage: "Please try it again.",
 
-			var nt = chrome.notifications.update(notifId, {
-				type:    "progress",
-				message: "-----------Click here!-----------",
-				contextMessage: "Thank you for donating facts!",
-				iconUrl: "icon.png",
-				progress: 100
-			});
+          }, function(id) {
+              myNotificationID = id;
+          });
+        console.log("[Error] Fact was sent but failed to create a page on FactPub")
+        port = null;
 
-		}else if("error" in message){
-			chrome.notifications.update(notifId, {
-				type:    "basic",
-				message: message.error,
-				iconUrl: "icon_no.png"
-			});
+      }else{
+        chrome.notifications.onClicked.addListener(function(notifId) {
+          chrome.tabs.create(
+            {"url":message.url}
+          );
+          chrome.notifications.clear(notifId);
+        });
 
-		}
+        var nt = chrome.notifications.update(notifId, {
+          type:    "progress",
+          message: "-----------Click here!-----------",
+          contextMessage: "Thank you for donating facts!",
+          iconUrl: "icon.png",
+          progress: 100
+        });
+      }
+
+  		}else if("error" in message){
+  			chrome.notifications.update(notifId, {
+  				type:    "basic",
+  				message: message.error,
+  				iconUrl: "icon_no.png"
+  			});
+  		}
+
 
 	});
 
