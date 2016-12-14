@@ -23,6 +23,7 @@ var factpubId = "anonymous";
 var email = null;
 var myNotificationID = null;
 
+// for installation of chrome extension
 chrome.runtime.onInstalled.addListener(function(details){
 
   var OSName="Unknown OS";
@@ -138,6 +139,7 @@ function getRandomToken() {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 // Codes when Browser load the page
+// identify PDF paper when loaded in browser
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 	if(changeInfo.status == "complete"){
@@ -245,6 +247,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 /* Respond to the user's clicking one of the buttons */
 chrome.notifications.onButtonClicked.addListener(function(notifId, btnIdx) {
 		if (notifId === myNotificationID) {
+			// if first button (Yes) is clicked, then enter to process pdf
 				if (btnIdx === 0) {
 
 						byteArray = new Uint8Array(xhr.response);
@@ -312,6 +315,9 @@ function sendUserActivityToServer(factpubId, email, chromeToken, url){
 function connectNativeApp(message, notifId) {
 	var hostName = "org.factpub.factify";
 
+	// look in local Users folder factify_chrome
+	// _org.factpub.factify.win directs to call _factify_launcher
+	// which the calls factify
 	port = chrome.runtime.connectNative(hostName);
 	console.log(message);
 	port.postMessage(message);
