@@ -2,7 +2,7 @@
 	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlK9/MBHINVAznjiPODZWCUel/EpkWuHTdZFIu6ox99QMMwxBS14E5GJBkBNm3vZUnC5lOlBaigu5bN4xfwqMMA1v6usOVV8Yshma+TC9oC6+MT85CMuEKU6s3HquspPbl9DiewmrJGO+DeECIpQuxRolLX9vjfDo97dD9T2FI9SXIn7xAvVR4mzILVP/drWBxbOnKk+z4wswLZkVgGqtBstvRkuZSHuXoE7JzwFfoAmBjMbvIakq2vlSuDenaDY1zZtq8HCh2prRD2sygHOlpaZAadBPvzezrtVOP+MHTS+HmdhMVzGoypJYChknWKzIqeGhP/LTcdF97XOhwbwoKwIDAQAB",
    	"name": "Factify Chrome",
 	"author": "Sun SAGONG",
-	"version": "0.8.5",
+	"version": "0.9.1",
 	"manifest_version": 2,
 	"description": "Factify Chrome Extension by using NativeMessaging",
 	"icons": {
@@ -22,6 +22,7 @@
 		"tabs",
 		"storage",
 		"identity",
+		"downloads",
 		"notifications",
 		"http://*/*",
 		"https://*/*",

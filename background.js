@@ -33,22 +33,20 @@ chrome.runtime.onInstalled.addListener(function(details){
   if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
 
   if(OSName == "Windows"){
-		chrome.tabs.create(
+		chrome.downloads.download(
 			{url : "http://factpub.org/public/factify_ChromeExtension/install_scripts_win/setup.exe"}
 		);
 		chrome.tabs.create(
 			{url : "./instructions_win.html"}
 		);
   }else if(OSName == "MacOS" || OSName == "UNIX" || OSName == "Linux"){
-		chrome.tabs.create(
+		chrome.downloads.download(
 			{url : "http://factpub.org/public/factify_ChromeExtension/install_scripts_mac_linux/setup"}
 		);
 		chrome.tabs.create(
 			{url : "./instructions_mac_linux.html"}
 		);
 	};
-
-
 
 	// https://developer.chrome.com/extensions/storage
 	// storage.sync => the token is valid for one user (multiple machine as long as user use Chrome with their credential)
