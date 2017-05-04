@@ -131,8 +131,6 @@ function getRandomToken() {
 ////////////////////////////////////////////////////////////////////////////
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -140,101 +138,86 @@ function getRandomToken() {
 // identify PDF paper when loaded in browser
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
-	if(changeInfo.status == "complete"){
+    if(changeInfo.status == "complete"){
 
-		//TODO: check if serverRequestHandler is alive
-		fetch(handlerUrl).then(function(response) {
-			if(response.status == 200){
-				xhr = new XMLHttpRequest();
-				var url = tab.url;
+        //check if page is PDF
+        //then check if serverRequestHandler is alive
+		    //TODO: check if serverRequestHandler is alive
+        xhr = new XMLHttpRequest();
+        var url = tab.url;
 
-				xhr.open('GET', url, true);
-				xhr.responseType = "arraybuffer";
+        xhr.open('GET', url, true);
+        xhr.responseType = "arraybuffer";
 
-				xhr.onload = function() {
-					if (isPdfFile(this, url)) {
+        xhr.onload = function() {
+        if (isPdfFile(this, url)) {
+            console.log("This page is PDF: " + url);
 
-					console.log("This page is PDF: " + url);
+            fetch(handlerUrl).then(function(response) {
+                if(response.status == 200){
+                    // Notification: Ask user to factify PDF or not.
+                    var nt = chrome.notifications.create("",{
+                        type:    "basic",
+                        iconUrl: "icon.png",
+                        title:   "Factify",
+                        message: "Donate facts of this paper?",
+                        contextMessage: url,
+                        requireInteraction: true,
 
-					// Send User Activity to serverRequestHandler
-					chrome.storage.sync.get('factpubId', function(items) {
-						chrome.identity.getProfileUserInfo(function(userinfo){
-							if(items.factpubId == undefined){
-								factpubId = "anonymous";
-							}else{
-								factpubId = items.factpubId;
-							};
+                        // Only be able to show up till two buttons
+                        // https://developer.chrome.com/apps/richNotifications#behave
+                        buttons: [{
+                            title: "Yes.",
+                            iconUrl: "icon_yes.png"
+                        }, {
+                            title: "No.",
+                            iconUrl: "icon_no.png"
+                        }]
+                    }, function(id) {
+                            myNotificationID = id;
+                    });
+                }else{
+          				// Show Error notification if serverRequestHandler does not have handler.
+          				// response.status == 404
 
-							//console.log(userinfo);
-							var email = userinfo.email;
-							sendUserActivityToServer(factpubId, email, chromeToken, url);
-						})
-					});
+          				console.log("[Error] factpub.org: server process seems not to exist.");
+          				var nt = chrome.notifications.create("", {
+          					  type:    "basic",
+          					  iconUrl: "icon_no.png",
+          					  title:   "Factify",
+          					  message: "[Error] factpub.org: server process not exist.",
+          					  contextMessage: response.status + " " + response.statusText
+          				}, function(id) {
+          					myNotificationID = id;
+          				});
+                    return false
+          			}
+            }).catch(function(err) {
+                    console.log("[Error] factpub.org: server process seems down.");
+                    console.log(err);
 
-					// Notification: Ask user to factify PDF or not.
-					var nt = chrome.notifications.create("",{
-						type:    "basic",
-						iconUrl: "icon.png",
-						title:   "Factify",
-						message: "Donate facts of this paper?",
-						contextMessage: url,
-						requireInteraction: true,
+                    // Show Error notification if serverRequestHandler is down.
+                    // response.status == 404
+                    var nt = chrome.notifications.create("", {
+                        type:    "basic",
+                        iconUrl: "icon_no.png",
+                        title:   "Factify",
+                        message: "[Error] factpub.org: server seems down.",
+                        contextMessage: err.toString()
+                    }, function(id) {
+                        myNotificationID = id;
+                    });
+                    return false
+            });
 
-						// Only be able to show up till two buttons
-						// https://developer.chrome.com/apps/richNotifications#behave
-						buttons: [{
-								title: "Yes.",
-								iconUrl: "icon_yes.png"
-						}, {
-								title: "No.",
-								iconUrl: "icon_no.png"
-						}]
-						}, function(id) {
-								myNotificationID = id;
-					});
+        } else {
+              // The page is HTML file
+              // Do nothing.
+        }
+        }
+        xhr.send(null);
+    		}
 
-
-					} else {
-						// The page is HTML file
-						// Do nothing.
-					}
-				}
-				xhr.send(null);
-
-			}else{
-				// Show Error notification if serverRequestHandler does not have handler.
-				// response.status == 404
-
-				console.log("[Error] factpub.org: server process seems not to exist.");
-				var nt = chrome.notifications.create("", {
-					type:    "basic",
-					iconUrl: "icon_no.png",
-					title:   "Factify",
-					message: "[Error] factpub.org: server process not exist.",
-					contextMessage: response.status + " " + response.statusText
-				}, function(id) {
-					myNotificationID = id;
-				});
-			}
-
-	  	}).catch(function(err) {
-			console.log("[Error] factpub.org: server process seems down.");
-			console.log(err);
-
-				// Show Error notification if serverRequestHandler is down.
-				// response.status == 404
-				var nt = chrome.notifications.create("", {
-					type:    "basic",
-					iconUrl: "icon_no.png",
-					title:   "Factify",
-					message: "[Error] factpub.org: server seems down.",
-					contextMessage: err.toString()
-				}, function(id) {
-					myNotificationID = id;
-				});
-		});
-
-	}
 });
 // Codes when Browser load the page
 ////////////////////////////////////////////////////////////////////////////
